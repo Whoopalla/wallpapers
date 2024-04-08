@@ -23,7 +23,29 @@ const char *usage = "Usage: ./wallpapers --height --width --style";
 
 bool use_random_style;
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+void set_wallpaper(void) {
+    char cwd[MAX_PATH];
+    if (GetCurrentDirectory(sizeof(cwd), cwd) == 0) {
+        fprintf(stderr, "ERROR: couldn't get currnet working directory.");
+        exit(1);
+    }
+    // for (size_t i = 0; i < strlen(cwd); i++) {
+    //     if (cwd[i] == '\\') cwd[i] = '/';
+    // }
+    printf("cwd: %s\n", cwd);
+    char path[MAX_PATH];
+    sprintf(path, "%s/output.png", cwd);
+    if (SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE) == 0) {
+        fprintf(stderr, "ERROR: couldn't update system parameters.");
+        exit(1);
+    }
+}
+#endif
+
 int main(int argc, char **argv) {
+    srand(time(NULL));
     size_t height, width;
     paperwall_style style;
     size_t height_param_l = strlen(height_param);
@@ -36,7 +58,7 @@ int main(int argc, char **argv) {
     }
     height = DEFAULT_HEIGHT;
     width = DEFAULT_WIDTH;
-    style = Voronoi;
+    style = rand() % _StyleEnumEnd;
 
     for (size_t i = 0; (int)i < argc; i++) {
         if (!strncmp(argv[i], height_param, height_param_l)) {
@@ -69,7 +91,7 @@ int main(int argc, char **argv) {
                 return -1;
             }
             if (style < 0 || style >= _StyleEnumEnd) {
-                fprintf(stderr, "Max style value: %d\n", _StyleEnumEnd-1);  // TODO: Print out possible style values
+                fprintf(stderr, "Max style value: %d\n", _StyleEnumEnd - 1);  // TODO: Print out possible style values
                 return -1;
             }
         }
@@ -100,4 +122,5 @@ int main(int argc, char **argv) {
             draw_perpendecular_lines();
             break;
     }
+    set_wallpaper();
 }
