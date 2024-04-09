@@ -121,6 +121,8 @@ int main(int argc, char **argv) {
             fflush(stdout);
             draw_perpendecular_lines();
             break;
-    }
+   }
+    #if defined(_WIN32) || defined(_WIN64)
     set_wallpaper();
+    #endif
 }
